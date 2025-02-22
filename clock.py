@@ -26,7 +26,7 @@ class Arrow:
 class HourArrow(Arrow):
     @staticmethod
     def angular_velocity() -> float:
-        return np.pi / 12 / 60
+        return np.pi / 6 / 60
 
 class MinuteArrow(Arrow):
     @staticmethod

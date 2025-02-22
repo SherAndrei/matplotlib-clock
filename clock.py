@@ -1,3 +1,4 @@
+import datetime
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -33,8 +34,9 @@ class MinuteArrow(Arrow):
     def angular_velocity() -> float:
         return np.pi / 30
 
-hour_arrow = HourArrow(column_vector([0, 0.4]))
-minute_arrow = MinuteArrow(column_vector([0, 1]))
+now = datetime.datetime.now()
+hour_arrow = HourArrow(rotate(column_vector([0, 0.4]), now.hour * np.pi / 6 + now.minute * HourArrow.angular_velocity()))
+minute_arrow = MinuteArrow(rotate(column_vector([0, 1]), now.minute * MinuteArrow.angular_velocity()))
 
 fig, ax = plt.subplots(figsize=(8,8))
 

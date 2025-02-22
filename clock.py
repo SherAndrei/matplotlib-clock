@@ -1,8 +1,11 @@
+from typing import Tuple
+
 import datetime
 import numpy as np
 import matplotlib.pyplot as plt
 
-def rotate(v, alpha):
+def rotate(v: np.ndarray, alpha: float) -> np.ndarray:
+    """Rotate a 2D vector by a given angle."""
     assert v.shape == (2, 1)
     rotation_matrix = np.array([
         [np.cos(alpha),  np.sin(alpha)],
@@ -10,54 +13,64 @@ def rotate(v, alpha):
       ])
     return np.matmul(rotation_matrix, v)
 
-
-def column_vector(l):
+def column_vector(l: Tuple[float, float]) -> np.ndarray:
+    """Convert a list or tuple to a column vector."""
     return np.vstack(l)
 
 class Arrow:
-    def __init__(self, other: np.array) -> None:
-        self.__raw = other
+    """Base class for clock arrows."""
+    def __init__(self, length: float, angle: float):
+        self.vector = rotate(column_vector([0, length]), angle)
 
-    def value(self) -> np.array:
-        return self.__raw
+    @property
+    def value(self) -> np.ndarray:
+        """Get the current vector representation of the arrow."""
+        return self.vector
 
-    def length(self) -> float:
-        return np.sqrt(np.matmul(self.value().T, self.value()).item())
+    @staticmethod
+    def angular_velocity() -> float:
+        """Get the angular velocity of the arrow."""
+        raise NotImplementedError
+
 
 class HourArrow(Arrow):
+    """Class representing the hour arrow."""
     @staticmethod
     def angular_velocity() -> float:
         return np.pi / 6 / 60
 
 class MinuteArrow(Arrow):
+    """Class representing the minute arrow."""
     @staticmethod
     def angular_velocity() -> float:
         return np.pi / 30
 
-now = datetime.datetime.now()
-hour_arrow = HourArrow(rotate(column_vector([0, 0.4]), now.hour * np.pi / 6 + now.minute * HourArrow.angular_velocity()))
-minute_arrow = MinuteArrow(rotate(column_vector([0, 1]), now.minute * MinuteArrow.angular_velocity()))
+class Clock:
+    """Class representing a clock."""
 
-fig, ax = plt.subplots(figsize=(8,8))
+    def __init__(self):
+        now = datetime.datetime.now()
+        self.hour_arrow = HourArrow(0.4, now.hour * np.pi / 6 + now.minute * HourArrow.angular_velocity())
+        self.minute_arrow = MinuteArrow(1, now.minute * MinuteArrow.angular_velocity())
+        self.fig, self.ax = plt.subplots(figsize=(8, 8))
+        self.fig.canvas.manager.set_window_title('Clock')
+        self.fig.canvas.mpl_connect('key_press_event', self.on_key_press)
 
-fig.canvas.manager.set_window_title('Clock')
+    def display_clock(self):
+        """Display the clock with hour and minute arrows."""
+        self.ax.clear()
+        self.ax.axis('off')
+        self.ax.set_xlim([-1, 1])
+        self.ax.set_ylim([-1, 1])
 
-def display_clock():
-    plt.cla()
-    ax.axis('off')
-    ax.set_xlim([-1, 1])
-    ax.set_ylim([-1, 1])
+        self.ax.add_patch(plt.Circle((0, 0), 1, edgecolor='black', facecolor='none'))
 
-    ax.add_patch(plt.Circle((0, 0), 1, edgecolor='black', facecolor='none'))
-
-    def display_hours():
         for hour in range(1, 13):
             angle = hour * np.pi / 6
             scale = 0.94
             coords = np.array([scale * np.sin(angle), scale * np.cos(angle)])
-            plt.text(*coords, str(hour), fontsize=14, horizontalalignment='center', verticalalignment='center')
+            self.ax.text(*coords, str(hour), fontsize=14, horizontalalignment='center', verticalalignment='center')
 
-    def display_minutes():
         for minute in range(60):
             if minute % 5 == 0:
                 continue
@@ -65,30 +78,22 @@ def display_clock():
             xcoord = np.sin(angle)
             ycoord = np.cos(angle)
             scale = 0.98
-            plt.plot([scale * xcoord, xcoord], [scale * ycoord, ycoord], '-k')
+            self.ax.plot([scale * xcoord, xcoord], [scale * ycoord, ycoord], '-k')
 
-    def do_display_arrow(target):
-        plt.quiver(*target.value(), angles='xy', scale_units='xy', scale=1)
+        self.ax.quiver(*self.hour_arrow.value, angles='xy', scale_units='xy', scale=1, color='blue')
+        self.ax.quiver(*self.minute_arrow.value, angles='xy', scale_units='xy', scale=1, color='red')
 
-    display_hours()
-    display_minutes()
-    do_display_arrow(hour_arrow)
-    do_display_arrow(minute_arrow)
-    plt.draw()
+        plt.draw()
 
-def do_rotate(target, explicit_direction):
-    direction = 1 if explicit_direction == 'right' else -1
-    return rotate(target.value(), direction * target.angular_velocity())
+    def on_key_press(self, event):
+        """Handle key press events to rotate arrows."""
+        if event.key in ('right', 'left'):
+            direction = 1 if event.key == 'right' else -1
+            self.hour_arrow.vector = rotate(self.hour_arrow.value, direction * self.hour_arrow.angular_velocity())
+            self.minute_arrow.vector = rotate(self.minute_arrow.value, direction * self.minute_arrow.angular_velocity())
+            self.display_clock()
 
-def on_key_press(event):
-    global hour_arrow
-    global minute_arrow
-    if event.key == 'right' or event.key == 'left':
-      hour_arrow = HourArrow(do_rotate(hour_arrow, event.key))
-      minute_arrow = MinuteArrow(do_rotate(minute_arrow, event.key))
-    display_clock()
-
-fig.canvas.mpl_connect('key_press_event', on_key_press)
-
-display_clock()
-plt.show()
+if __name__ == "__main__":
+    clock = Clock()
+    clock.display_clock()
+    plt.show()

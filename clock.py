@@ -52,10 +52,21 @@ def display_clock():
             coords = np.array([np.sin(angle), np.cos(angle)])
             plt.text(*coords, str(hour), horizontalalignment='center', verticalalignment='center')
 
+    def display_minutes():
+        for minute in range(60):
+            if minute % 5 == 0:
+                continue
+            angle = minute * np.pi / 30
+            xcoord = np.sin(angle)
+            ycoord = np.cos(angle)
+            scale = 0.98
+            plt.plot([scale * xcoord, xcoord], [scale * ycoord, ycoord], '-k')
+
     def do_display_arrow(target):
         plt.quiver(*target.value(), angles='xy', scale_units='xy', scale=1)
 
     display_hours()
+    display_minutes()
     do_display_arrow(hour_arrow)
     do_display_arrow(minute_arrow)
     plt.draw()

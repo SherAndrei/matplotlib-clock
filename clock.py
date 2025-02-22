@@ -31,7 +31,7 @@ class HourArrow(Arrow):
 class MinuteArrow(Arrow):
     @staticmethod
     def angular_velocity() -> float:
-        return np.pi / 12 / 5
+        return np.pi / 30
 
 hour_arrow = HourArrow(column_vector([0, 0.4]))
 minute_arrow = MinuteArrow(column_vector([0, 1]))

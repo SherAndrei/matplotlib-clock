@@ -48,11 +48,14 @@ def display_clock():
     ax.set_xlim([-1, 1])
     ax.set_ylim([-1, 1])
 
+    ax.add_patch(plt.Circle((0, 0), 1, edgecolor='black', facecolor='none'))
+
     def display_hours():
         for hour in range(1, 13):
             angle = hour * np.pi / 6
-            coords = np.array([np.sin(angle), np.cos(angle)])
-            plt.text(*coords, str(hour), horizontalalignment='center', verticalalignment='center')
+            scale = 0.94
+            coords = np.array([scale * np.sin(angle), scale * np.cos(angle)])
+            plt.text(*coords, str(hour), fontsize=14, horizontalalignment='center', verticalalignment='center')
 
     def display_minutes():
         for minute in range(60):

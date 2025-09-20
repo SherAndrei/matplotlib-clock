@@ -51,7 +51,7 @@ class Clock:
     def __init__(self):
         now = datetime.datetime.now()
         self.hour_arrow = HourArrow(0.4, now.hour * np.pi / 6 + now.minute * HourArrow.angular_velocity())
-        self.minute_arrow = MinuteArrow(1, now.minute * MinuteArrow.angular_velocity())
+        self.minute_arrow = MinuteArrow(0.6, now.minute * MinuteArrow.angular_velocity())
         self.fig, self.ax = plt.subplots(figsize=(8, 8))
         self.fig.canvas.manager.set_window_title('Clock')
         self.fig.canvas.mpl_connect('key_press_event', self.on_key_press)
